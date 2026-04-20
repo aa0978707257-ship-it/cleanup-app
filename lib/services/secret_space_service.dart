@@ -4,7 +4,7 @@ import 'dart:typed_data';
 
 import 'package:encrypt/encrypt.dart' as encrypt;
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
@@ -52,7 +52,9 @@ class SecretSpaceService extends ChangeNotifier {
   static const _itemsKey = 'secret_space_items';
   static const _vaultDir = 'secret_vault';
 
-  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
+  // Using SharedPreferences instead of FlutterSecureStorage to avoid
+  // Windows ATL dependency. On iOS/Android, switch back to FlutterSecureStorage.
+  SharedPreferences? _prefs;
   final LocalAuthentication _localAuth = LocalAuthentication();
   final Uuid _uuid = const Uuid();
 
@@ -69,13 +71,13 @@ class SecretSpaceService extends ChangeNotifier {
   /// Set up a new PIN for the secret space. Also generates the AES key if
   /// one doesn't already exist.
   Future<void> setupPIN(String pin) async {
-    await _secureStorage.write(key: _pinKey, value: pin);
+    await _writeSecure(key: _pinKey, value: pin);
     await _ensureEncryptionKey();
   }
 
   /// Returns true if the provided PIN matches the stored one.
   Future<bool> verifyPIN(String pin) async {
-    final stored = await _secureStorage.read(key: _pinKey);
+    final stored = await _readSecure(key: _pinKey);
     if (stored == null) return false;
 
     final valid = stored == pin;
@@ -89,7 +91,7 @@ class SecretSpaceService extends ChangeNotifier {
 
   /// Returns true if a PIN has been configured.
   Future<bool> hasPIN() async {
-    final pin = await _secureStorage.read(key: _pinKey);
+    final pin = await _readSecure(key: _pinKey);
     return pin != null && pin.isNotEmpty;
   }
 
@@ -198,18 +200,18 @@ class SecretSpaceService extends ChangeNotifier {
   // -----------------------------------------------------------------------
 
   Future<void> _ensureEncryptionKey() async {
-    final existing = await _secureStorage.read(key: _aesKey);
+    final existing = await _readSecure(key: _aesKey);
     if (existing != null) return;
 
     final key = encrypt.Key.fromSecureRandom(32); // AES-256
     final iv = encrypt.IV.fromSecureRandom(16);
 
-    await _secureStorage.write(key: _aesKey, value: base64.encode(key.bytes));
-    await _secureStorage.write(key: _aesIvKey, value: base64.encode(iv.bytes));
+    await _writeSecure(key: _aesKey, value: base64.encode(key.bytes));
+    await _writeSecure(key: _aesIvKey, value: base64.encode(iv.bytes));
   }
 
   Future<encrypt.Encrypter> _getEncrypter() async {
-    final keyB64 = await _secureStorage.read(key: _aesKey);
+    final keyB64 = await _readSecure(key: _aesKey);
     if (keyB64 == null) {
       throw Exception('Encryption key not found. Call setupPIN first.');
     }
@@ -218,7 +220,7 @@ class SecretSpaceService extends ChangeNotifier {
   }
 
   Future<encrypt.IV> _getIV() async {
-    final ivB64 = await _secureStorage.read(key: _aesIvKey);
+    final ivB64 = await _readSecure(key: _aesIvKey);
     if (ivB64 == null) {
       throw Exception('IV not found. Call setupPIN first.');
     }
@@ -254,7 +256,7 @@ class SecretSpaceService extends ChangeNotifier {
   }
 
   Future<void> _loadItems() async {
-    final json = await _secureStorage.read(key: _itemsKey);
+    final json = await _readSecure(key: _itemsKey);
     if (json == null || json.isEmpty) {
       _items = [];
       return;
@@ -273,7 +275,7 @@ class SecretSpaceService extends ChangeNotifier {
 
   Future<void> _saveItems() async {
     final json = jsonEncode(_items.map((i) => i.toJson()).toList());
-    await _secureStorage.write(key: _itemsKey, value: json);
+    await _writeSecure(key: _itemsKey, value: json);
   }
 
   // -----------------------------------------------------------------------
@@ -284,5 +286,24 @@ class SecretSpaceService extends ChangeNotifier {
     if (!_isUnlocked) {
       throw StateError('Secret space is locked. Authenticate first.');
     }
+  }
+
+  // -----------------------------------------------------------------------
+  // SharedPreferences wrapper (replace with FlutterSecureStorage on mobile)
+  // -----------------------------------------------------------------------
+
+  Future<SharedPreferences> _getPrefs() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!;
+  }
+
+  Future<void> _writeSecure({required String key, required String value}) async {
+    final prefs = await _getPrefs();
+    await prefs.setString(key, value);
+  }
+
+  Future<String?> _readSecure({required String key}) async {
+    final prefs = await _getPrefs();
+    return prefs.getString(key);
   }
 }

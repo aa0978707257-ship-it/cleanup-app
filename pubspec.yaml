@@ -32,7 +32,8 @@ dependencies:
   # Security
   local_auth: ^2.3.0             # Biometrics (Face ID / Fingerprint)
   encrypt: ^5.0.3                # AES encryption for Secret Space
-  flutter_secure_storage: ^9.2.4 # Keychain storage
+  # flutter_secure_storage: ^9.2.4 # Disabled: requires ATL on Windows. Using SharedPreferences instead.
+  # Re-enable for iOS/Android production builds.
 
   # Subscriptions
   purchases_flutter: ^8.10.0     # RevenueCat (StoreKit wrapper)

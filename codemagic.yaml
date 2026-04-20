@@ -1,0 +1,117 @@
+# Codemagic CI/CD — Build iOS & Android from Windows
+# Setup: https://codemagic.io
+# 1. Push this repo to GitHub/GitLab
+# 2. Connect repo to Codemagic dashboard
+# 3. Configure signing (Codemagic auto-manages iOS certificates)
+# 4. Trigger build → Codemagic builds on macOS cloud → submits to stores
+
+workflows:
+  # ============================================
+  # iOS Production Build
+  # ============================================
+  ios-release:
+    name: iOS Release
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.cleanupapp.app
+      vars:
+        APP_STORE_CONNECT_ISSUER_ID: YOUR_ISSUER_ID
+        APP_STORE_CONNECT_KEY_IDENTIFIER: YOUR_KEY_ID
+        APP_STORE_CONNECT_PRIVATE_KEY: YOUR_PRIVATE_KEY
+      flutter: stable
+
+    scripts:
+      - name: Install dependencies
+        script: flutter pub get
+
+      - name: Run tests
+        script: flutter test
+
+      - name: Build iOS
+        script: |
+          flutter build ipa \
+            --release \
+            --export-options-plist=/Users/builder/export_options.plist
+
+    artifacts:
+      - build/ios/ipa/*.ipa
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        submit_to_app_store: false  # Set true for production
+
+  # ============================================
+  # Android Production Build
+  # ============================================
+  android-release:
+    name: Android Release
+    max_build_duration: 30
+    instance_type: linux_x2
+
+    environment:
+      android_signing:
+        - cleanup_keystore  # Configure in Codemagic dashboard
+      vars:
+        GOOGLE_PLAY_SERVICE_ACCOUNT: YOUR_SERVICE_ACCOUNT_JSON
+      flutter: stable
+
+    scripts:
+      - name: Install dependencies
+        script: flutter pub get
+
+      - name: Run tests
+        script: flutter test
+
+      - name: Build Android AAB
+        script: |
+          flutter build appbundle \
+            --release
+
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
+
+    publishing:
+      google_play:
+        credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT
+        track: internal  # internal → alpha → beta → production
+        submit_as_draft: true
+
+  # ============================================
+  # PR / Development Build (for testing)
+  # ============================================
+  dev-build:
+    name: Development Build
+    max_build_duration: 30
+    instance_type: mac_mini_m2
+
+    triggering:
+      events:
+        - pull_request
+      branch_patterns:
+        - pattern: '*'
+          include: true
+
+    environment:
+      flutter: stable
+
+    scripts:
+      - name: Install dependencies
+        script: flutter pub get
+
+      - name: Analyze code
+        script: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        script: flutter test
+
+      - name: Build Android APK (debug)
+        script: flutter build apk --debug
+
+    artifacts:
+      - build/app/outputs/flutter-apk/app-debug.apk

@@ -1,0 +1,86 @@
+name: cleanup_app
+description: "Cleanup - Phone Storage Cleaner"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State Management
+  provider: ^6.1.2
+  flutter_riverpod: ^2.6.1
+
+  # Photo & Media
+  photo_manager: ^3.6.0          # Access photo library
+  image: ^4.5.3                  # Image processing (hashing)
+  video_compress: ^3.1.3         # Video compression
+  crypto: ^3.0.6                 # Hashing utilities
+
+  # Contacts
+  flutter_contacts: ^1.1.9       # Contacts access
+
+  # Storage
+  path_provider: ^2.1.5
+  shared_preferences: ^2.3.4
+
+  # Security
+  local_auth: ^2.3.0             # Biometrics (Face ID / Fingerprint)
+  encrypt: ^5.0.3                # AES encryption for Secret Space
+  flutter_secure_storage: ^9.2.4 # Keychain storage
+
+  # Subscriptions
+  purchases_flutter: ^8.10.0     # RevenueCat (StoreKit wrapper)
+
+  # Analytics & Tracking
+  firebase_core: ^3.12.1
+  firebase_analytics: ^11.5.1
+  firebase_remote_config: ^5.3.1
+  firebase_crashlytics: ^4.3.2
+  adjust_sdk: ^5.0.2             # Adjust MMP
+  facebook_app_events: ^0.19.2   # Facebook SDK
+  app_tracking_transparency: ^2.0.6
+
+  # UI Components
+  flutter_animate: ^4.5.2        # Animations
+  shimmer: ^3.0.0                # Loading shimmer
+  cached_network_image: ^3.4.1
+  flutter_svg: ^2.0.17
+  smooth_page_indicator: ^1.2.0+3
+  percent_indicator: ^4.2.3      # Circle progress
+
+  # Notifications
+  flutter_local_notifications: ^18.0.1
+
+  # Deep Linking
+  uni_links: ^0.5.1
+  app_links: ^6.4.0
+
+  # Utilities
+  intl: ^0.19.0                  # Localization
+  permission_handler: ^11.3.1    # Unified permissions
+  url_launcher: ^6.3.1
+  share_plus: ^10.1.4
+  in_app_review: ^2.0.10         # Rating prompt
+  package_info_plus: ^8.2.1
+  device_info_plus: ^11.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+
+  # Localization
+  generate: true

@@ -28,20 +28,15 @@ jobs:
           mkdir -p ~/private_keys
           echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" > ~/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_KEY_ID }}.p8
 
-      - name: Install Apple Certificate and Provisioning Profile
+      - name: Install Codemagic CLI tools
+        run: |
+          pipx install codemagic-cli-tools
+
+      - name: Setup signing
         env:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
         run: |
-          # Use Xcode's automatic signing with App Store Connect API
-          xcrun notarytool store-credentials "AC_PASSWORD" \
-            --apple-id "placeholder" \
-            --team-id "placeholder" || true
-
-          # Install codemagic CLI tools for signing
-          pip3 install codemagic-cli-tools
-
-          # Fetch signing files
           export APP_STORE_CONNECT_PRIVATE_KEY=$(cat ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8)
 
           app-store-connect fetch-signing-files "com.cleanupapp.cleaner" \
@@ -51,13 +46,8 @@ jobs:
             --private-key "$APP_STORE_CONNECT_PRIVATE_KEY" \
             --create
 
-          # Initialize keychain
           keychain initialize
-
-          # Add certificates to keychain
           keychain add-certificates
-
-          # Set up Xcode project to use profiles
           xcode-project use-profiles
 
       - name: Set build number

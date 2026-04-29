@@ -1,0 +1,99 @@
+name: iOS Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Setup App Store Connect API Key
+        run: |
+          mkdir -p ~/private_keys
+          echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" > ~/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_KEY_ID }}.p8
+
+      - name: Install Apple Certificate and Provisioning Profile
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          # Use Xcode's automatic signing with App Store Connect API
+          xcrun notarytool store-credentials "AC_PASSWORD" \
+            --apple-id "placeholder" \
+            --team-id "placeholder" || true
+
+          # Install codemagic CLI tools for signing
+          pip3 install codemagic-cli-tools
+
+          # Fetch signing files
+          export APP_STORE_CONNECT_PRIVATE_KEY=$(cat ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8)
+
+          app-store-connect fetch-signing-files "com.cleanupapp.cleaner" \
+            --type IOS_APP_STORE \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_ID" \
+            --private-key "$APP_STORE_CONNECT_PRIVATE_KEY" \
+            --create
+
+          # Initialize keychain
+          keychain initialize
+
+          # Add certificates to keychain
+          keychain add-certificates
+
+          # Set up Xcode project to use profiles
+          xcode-project use-profiles
+
+      - name: Set build number
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          export APP_STORE_CONNECT_PRIVATE_KEY=$(cat ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8)
+          LATEST_BUILD=$(app-store-connect get-latest-testflight-build-number "6764532900" \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_ID" \
+            --private-key "$APP_STORE_CONNECT_PRIVATE_KEY" || echo 0)
+          cd ios
+          agvtool new-version -all $((LATEST_BUILD + 1))
+
+      - name: Build iOS
+        run: |
+          flutter build ipa \
+            --release \
+            --export-options-plist=$HOME/export_options.plist
+
+      - name: Upload to TestFlight
+        env:
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        run: |
+          export APP_STORE_CONNECT_PRIVATE_KEY=$(cat ~/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8)
+          app-store-connect publish \
+            --path build/ios/ipa/*.ipa \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_ID" \
+            --private-key "$APP_STORE_CONNECT_PRIVATE_KEY"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-ipa
+          path: build/ios/ipa/*.ipa

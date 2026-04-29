@@ -31,65 +31,51 @@ class _SettingsViewState extends State<SettingsView> {
     final sub = context.watch<SubscriptionManager>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: const Text('設定')),
       body: ListView(
         children: [
-          // Subscription
           ListTile(
             leading: Icon(
               sub.isPro ? Icons.workspace_premium : Icons.workspace_premium_outlined,
               color: sub.isPro ? Colors.amber : Colors.grey,
             ),
-            title: Text(sub.isPro ? 'Cleanup Pro' : 'Free Plan',
+            title: Text(sub.isPro ? 'Cleanup Pro' : '免費方案',
                 style: const TextStyle(fontWeight: FontWeight.bold)),
             trailing: sub.isPro
                 ? null
                 : ElevatedButton(
                     onPressed: () => Navigator.push(context,
                         MaterialPageRoute(builder: (_) => const PaywallView())),
-                    child: const Text('Upgrade'),
+                    child: const Text('升級'),
                   ),
           ),
           const Divider(),
 
-          // Storage
           if (_storage != null) ...[
-            _settingsHeader('Storage'),
-            _settingsRow('Total', _storage!.totalSpaceFormatted),
-            _settingsRow('Used', _storage!.usedSpaceFormatted),
-            _settingsRow('Available', _storage!.freeSpaceFormatted,
-                valueColor: AppTheme.successColor),
+            _settingsHeader('儲存空間'),
+            _settingsRow('總計', _storage!.totalSpaceFormatted),
+            _settingsRow('已使用', _storage!.usedSpaceFormatted),
+            _settingsRow('可用', _storage!.freeSpaceFormatted, valueColor: AppTheme.success),
             const Divider(),
           ],
 
-          // General
-          _settingsHeader('General'),
+          _settingsHeader('一般'),
+          ListTile(title: const Text('恢復購買'), onTap: () => sub.restorePurchases()),
+          ListTile(title: const Text('隱私權政策'),
+              onTap: () => launchUrl(Uri.parse(AppConstants.privacyPolicyUrl))),
+          ListTile(title: const Text('使用條款'),
+              onTap: () => launchUrl(Uri.parse(AppConstants.termsUrl))),
           ListTile(
-            title: const Text('Restore Purchases'),
-            onTap: () => sub.restorePurchases(),
-          ),
-          ListTile(
-            title: const Text('Privacy Policy'),
-            onTap: () => launchUrl(Uri.parse(AppConstants.privacyPolicyUrl)),
-          ),
-          ListTile(
-            title: const Text('Terms of Use'),
-            onTap: () => launchUrl(Uri.parse(AppConstants.termsUrl)),
-          ),
-          ListTile(
-            title: const Text('Rate Us'),
+            title: const Text('給我們評分'),
             onTap: () async {
               final review = InAppReview.instance;
-              if (await review.isAvailable()) {
-                review.requestReview();
-              }
+              if (await review.isAvailable()) review.requestReview();
             },
           ),
           const Divider(),
 
-          // About
-          _settingsHeader('About'),
-          _settingsRow('Version', '1.0.0'),
+          _settingsHeader('關於'),
+          _settingsRow('版本', '1.0.0'),
         ],
       ),
     );
@@ -99,16 +85,14 @@ class _SettingsViewState extends State<SettingsView> {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
       child: Text(title,
-          style: const TextStyle(
-              fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.grey)),
     );
   }
 
   Widget _settingsRow(String label, String value, {Color? valueColor}) {
     return ListTile(
       title: Text(label),
-      trailing: Text(value,
-          style: TextStyle(color: valueColor ?? Colors.grey[600])),
+      trailing: Text(value, style: TextStyle(color: valueColor ?? Colors.grey[600])),
     );
   }
 }

@@ -34,7 +34,7 @@ class _SecretSpaceViewState extends State<SecretSpaceView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Secret Space'),
+        title: const Text('私密空間'),
         actions: [
           if (service.isUnlocked)
             IconButton(
@@ -60,9 +60,9 @@ class _SecretSpaceViewState extends State<SecretSpaceView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.lock, size: 60, color: AppTheme.primaryColor),
+            const Icon(Icons.lock, size: 60, color: AppTheme.primary),
             const SizedBox(height: 24),
-            const Text('Enter PIN',
+            const Text('輸入密碼',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 24),
             SizedBox(
@@ -80,7 +80,7 @@ class _SecretSpaceViewState extends State<SecretSpaceView> {
             ),
             if (_error != null) ...[
               const SizedBox(height: 8),
-              Text(_error!, style: const TextStyle(color: AppTheme.dangerColor)),
+              Text(_error!, style: const TextStyle(color: AppTheme.danger)),
             ],
             const SizedBox(height: 16),
             ElevatedButton(
@@ -91,23 +91,23 @@ class _SecretSpaceViewState extends State<SecretSpaceView> {
                   setState(() => _error = null);
                 } else {
                   setState(() {
-                    _error = 'Wrong PIN';
+                    _error = '密碼錯誤';
                     _pinController.clear();
                   });
                 }
               },
-              child: const Text('Unlock'),
+              child: const Text('解鎖'),
             ),
             const SizedBox(height: 16),
             TextButton.icon(
               onPressed: () async {
                 final ok = await service.authenticateWithBiometrics();
                 if (!ok && mounted) {
-                  setState(() => _error = 'Biometric auth failed');
+                  setState(() => _error = '生物辨識驗證失敗');
                 }
               },
               icon: const Icon(Icons.fingerprint),
-              label: const Text('Use Biometrics'),
+              label: const Text('使用生物辨識'),
             ),
           ],
         ),
@@ -122,12 +122,12 @@ class _SecretSpaceViewState extends State<SecretSpaceView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.lock, size: 60, color: AppTheme.primaryColor),
+            const Icon(Icons.lock, size: 60, color: AppTheme.primary),
             const SizedBox(height: 24),
-            const Text('Set Up Secret Space',
+            const Text('設定私密空間',
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('Create a 4+ digit PIN',
+            Text('建立 4 位數以上的密碼',
                 style: TextStyle(color: Colors.grey[600])),
             const SizedBox(height: 24),
             SizedBox(
@@ -138,7 +138,7 @@ class _SecretSpaceViewState extends State<SecretSpaceView> {
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
                 decoration: const InputDecoration(
-                    border: OutlineInputBorder(), hintText: 'Create PIN'),
+                    border: OutlineInputBorder(), hintText: '設定密碼'),
               ),
             ),
             const SizedBox(height: 12),
@@ -150,20 +150,20 @@ class _SecretSpaceViewState extends State<SecretSpaceView> {
                 keyboardType: TextInputType.number,
                 textAlign: TextAlign.center,
                 decoration: const InputDecoration(
-                    border: OutlineInputBorder(), hintText: 'Confirm PIN'),
+                    border: OutlineInputBorder(), hintText: '確認密碼'),
               ),
             ),
             if (_error != null) ...[
               const SizedBox(height: 8),
-              Text(_error!, style: const TextStyle(color: AppTheme.dangerColor)),
+              Text(_error!, style: const TextStyle(color: AppTheme.danger)),
             ],
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
                 if (_pinController.text.length < 4) {
-                  setState(() => _error = 'PIN must be at least 4 digits');
+                  setState(() => _error = '密碼至少需要 4 位數');
                 } else if (_pinController.text != _confirmPinController.text) {
-                  setState(() => _error = "PINs don't match");
+                  setState(() => _error = '密碼不一致');
                 } else {
                   await service.setupPIN(_pinController.text);
                   if (!mounted) return;
@@ -173,7 +173,7 @@ class _SecretSpaceViewState extends State<SecretSpaceView> {
                   });
                 }
               },
-              child: const Text('Create Secret Space'),
+              child: const Text('建立私密空間'),
             ),
           ],
         ),
@@ -189,17 +189,17 @@ class _SecretSpaceViewState extends State<SecretSpaceView> {
           children: [
             Icon(Icons.photo_library, size: 60, color: Colors.grey[400]),
             const SizedBox(height: 16),
-            const Text('No items yet',
+            const Text('尚無項目',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text('Add photos and videos to keep them private'),
+            const Text('新增照片和影片來保護你的隱私'),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () {
                 // TODO: Image picker
               },
               icon: const Icon(Icons.add),
-              label: const Text('Add Items'),
+              label: const Text('新增項目'),
             ),
           ],
         ),

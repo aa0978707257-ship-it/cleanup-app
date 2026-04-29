@@ -14,7 +14,7 @@ class ContactsCleanupView extends StatelessWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Contacts'),
+          title: const Text('聯絡人'),
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh),
@@ -23,8 +23,8 @@ class ContactsCleanupView extends StatelessWidget {
           ],
           bottom: TabBar(
             tabs: [
-              Tab(text: 'Duplicates (${service.duplicateGroups.length})'),
-              Tab(text: 'Incomplete (${service.incompleteContacts.length})'),
+              Tab(text: '重複 (${service.duplicateGroups.length})'),
+              Tab(text: '不完整 (${service.incompleteContacts.length})'),
             ],
           ),
         ),
@@ -47,14 +47,14 @@ class ContactsCleanupView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.check_circle, size: 60, color: AppTheme.successColor),
+          const Icon(Icons.check_circle, size: 60, color: AppTheme.success),
           const SizedBox(height: 16),
-          const Text('Contacts are clean!',
+          const Text('聯絡人很乾淨！',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => service.scanContacts(),
-            child: const Text('Scan Contacts'),
+            child: const Text('掃描聯絡人'),
           ),
         ],
       ),
@@ -85,9 +85,9 @@ class ContactsCleanupView extends StatelessWidget {
                   child: ElevatedButton.icon(
                     onPressed: () => service.mergeContacts(group),
                     icon: const Icon(Icons.merge, size: 16),
-                    label: const Text('Merge All'),
+                    label: const Text('全部合併'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
+                      backgroundColor: AppTheme.primary,
                       foregroundColor: Colors.white,
                     ),
                   ),
@@ -107,19 +107,19 @@ class ContactsCleanupView extends StatelessWidget {
         final c = service.incompleteContacts[i];
         return ListTile(
           leading: const CircleAvatar(
-              backgroundColor: AppTheme.warningColor,
+              backgroundColor: AppTheme.warning,
               child: Icon(Icons.person, color: Colors.white)),
           title: Text(c.displayName),
           subtitle: Wrap(
             spacing: 4,
             children: [
-              if (c.displayName.trim().isEmpty) _badge('No Name'),
-              if (c.phoneNumbers.isEmpty) _badge('No Phone'),
-              if (c.emails.isEmpty) _badge('No Email'),
+              if (c.displayName.trim().isEmpty) _badge('無姓名'),
+              if (c.phoneNumbers.isEmpty) _badge('無電話'),
+              if (c.emails.isEmpty) _badge('無信箱'),
             ],
           ),
           trailing: IconButton(
-            icon: const Icon(Icons.delete, color: AppTheme.dangerColor),
+            icon: const Icon(Icons.delete, color: AppTheme.danger),
             onPressed: () => service.deleteContact(c),
           ),
         );
@@ -131,11 +131,11 @@ class ContactsCleanupView extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: AppTheme.warningColor.withValues(alpha: 0.1),
+        color: AppTheme.warning.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
       ),
       child: Text(text,
-          style: const TextStyle(color: AppTheme.warningColor, fontSize: 10)),
+          style: const TextStyle(color: AppTheme.warning, fontSize: 10)),
     );
   }
 }

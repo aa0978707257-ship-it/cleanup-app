@@ -25,20 +25,18 @@ class PaywallView extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            // Hero
             ShaderMask(
-              shaderCallback: (bounds) => AppTheme.appGradient.createShader(bounds),
+              shaderCallback: (bounds) => AppTheme.primaryGradient.createShader(bounds),
               child: const Icon(Icons.auto_awesome, size: 60, color: Colors.white),
             ),
             const SizedBox(height: 16),
             const Text('Cleanup Pro',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            Text('Unlock unlimited cleaning power',
+            Text('解鎖無限清理功能',
                 style: TextStyle(color: Colors.grey[600])),
             const SizedBox(height: 32),
 
-            // Features
             ..._features.map((f) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   child: Row(
@@ -47,35 +45,21 @@ class PaywallView extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(child: Text(f.$2)),
                       const Icon(Icons.check_circle,
-                          color: AppTheme.successColor, size: 18),
+                          color: AppTheme.success, size: 18),
                     ],
                   ),
                 )),
             const SizedBox(height: 32),
 
-            // Plan cards
-            _PlanCard(
-              title: 'Weekly',
-              price: '\$7.99/week',
-              isSelected: true,
-              isBestValue: false,
-              onTap: () {},
-            ),
+            _PlanCard(title: '週訂閱', price: '\$7.99/週', isSelected: true, isBestValue: false, onTap: () {}),
             const SizedBox(height: 8),
-            _PlanCard(
-              title: 'Yearly',
-              price: '\$29.99/year',
-              isSelected: false,
-              isBestValue: true,
-              onTap: () {},
-            ),
+            _PlanCard(title: '年訂閱', price: '\$29.99/年', isSelected: false, isBestValue: true, onTap: () {}),
             const SizedBox(height: 24),
 
-            // CTA
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                gradient: AppTheme.appGradient,
+                gradient: AppTheme.primaryGradient,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Material(
@@ -92,7 +76,7 @@ class PaywallView extends StatelessWidget {
                   },
                   child: const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Text('Start Free Trial',
+                    child: Text('開始免費試用',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: Colors.white,
@@ -104,22 +88,24 @@ class PaywallView extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Fine print
-            Text('7-day free trial, then auto-renews',
+            Text('7 天免費試用，之後自動續訂',
                 style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+            const SizedBox(height: 4),
+            Text('隨時可在設定中取消',
+                style: TextStyle(color: Colors.grey[500], fontSize: 11)),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
                     onPressed: () => sub.restorePurchases(),
-                    child: const Text('Restore', style: TextStyle(fontSize: 12))),
+                    child: const Text('恢復購買', style: TextStyle(fontSize: 12))),
                 TextButton(
                     onPressed: () {},
-                    child: const Text('Privacy', style: TextStyle(fontSize: 12))),
+                    child: const Text('隱私政策', style: TextStyle(fontSize: 12))),
                 TextButton(
                     onPressed: () {},
-                    child: const Text('Terms', style: TextStyle(fontSize: 12))),
+                    child: const Text('使用條款', style: TextStyle(fontSize: 12))),
               ],
             ),
           ],
@@ -129,12 +115,12 @@ class PaywallView extends StatelessWidget {
   }
 
   static const _features = [
-    (Icons.copy, 'Unlimited duplicate cleaning', AppTheme.dangerColor),
-    (Icons.photo_library, 'Smart similar photo detection', AppTheme.warningColor),
-    (Icons.compress, 'Photo & video compression', AppTheme.secondaryColor),
-    (Icons.people, 'Contact merge & cleanup', AppTheme.primaryColor),
-    (Icons.lock, 'Secret Space vault', AppTheme.successColor),
-    (Icons.screenshot, 'Screenshot bulk delete', Colors.teal),
+    (Icons.copy, '無限重複照片清理', AppTheme.danger),
+    (Icons.photo_library, '智慧相似照片偵測', AppTheme.warning),
+    (Icons.compress, '照片與影片壓縮', AppTheme.accent),
+    (Icons.people, '聯絡人合併清理', AppTheme.primary),
+    (Icons.lock, '私密空間保管庫', AppTheme.success),
+    (Icons.screenshot, '螢幕截圖批量刪除', Colors.teal),
   ];
 }
 
@@ -157,44 +143,34 @@ class _PlanCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           border: Border.all(
-            color: isSelected ? AppTheme.primaryColor : Colors.grey[300]!,
+            color: isSelected ? AppTheme.primary : Colors.grey[300]!,
             width: isSelected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
-          color: isSelected ? AppTheme.primaryColor.withValues(alpha: 0.05) : null,
+          color: isSelected ? AppTheme.primary.withValues(alpha: 0.05) : null,
         ),
         child: Row(
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Row(
-                    children: [
-                      Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                      if (isBestValue) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppTheme.warningColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text('BEST VALUE',
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ],
-                  ),
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  if (isBestValue) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppTheme.warning,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text('最超值',
+                          style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
                 ],
               ),
             ),
-            Text(price,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(price, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
